@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+        <script>
+            var openFile = function (event) {
+
+                var input = event.target;
+
+                var reader = new FileReader();
+                reader.onload = function () {
+                    var text = reader.result;
+                    var node = document.getElementById('output');
+                    node.innerText = text;
+                    var allTextLines = text.split(/\r\n|\n/);
+
+                    var flightPlanCoordinates = [];
+
+                    var latSum=0,longSum=0;
+                    console.log(allTextLines.length-1);
+                    for (var i = 1; i < allTextLines.length-1; i++) {
+                        var lin1_elements = allTextLines[i].split(',');
+                        //console.log(lin1_elements);
+                        longSum+=parseFloat(lin1_elements[1]);
+                        latSum+=parseFloat(lin1_elements[2]);
+                        flightPlanCoordinates.push( { lng: parseFloat(lin1_elements[1]), lat: parseFloat(lin1_elements[2])})
+                    }
+
+                    console.log(flightPlanCoordinates);
+                    console.log(longSum,latSum);
+
+                    console.log(longSum/(allTextLines.length-2),latSum/(allTextLines.length-2));
+                    //draw map
+                    var map = new google.maps.Map(document.getElementById('map'), {
+                        zoom: 16,
+                        center: {lng:longSum/(allTextLines.length-2), lat: latSum/(allTextLines.length-2)},
+                        //center: {lng:31.30329723, lat: 30.07402028},
+                        mapTypeId: 'terrain'
+                    });
+
+                    var flightPath = new google.maps.Polyline({
+                        path: flightPlanCoordinates.slice(0,flightPlanCoordinates.length),
+                        geodesic: true,
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 1.0,
+                        strokeWeight: 5
+                    });
+
+                    flightPath.setMap(map);
+
+                };
+                reader.readAsText(input.files[0]);
+            }
+
+
+        </script>
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+             * element that contains the map. */
+            #map {
+                height: 100%;
+            }
+
+            /* Optional: Makes the sample page fill the window. */
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+        </style>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSx6c1Mr4UUfx3KjWoB9jhfnZVOsQvq6o">
+        </script>
+    </head>
+    <body>
+        <input type='file' accept='text/plain' onchange='openFile(event)'><br>
+
+        <div id="map"></div>
+
+        <div id='output'>
+            ...
+
+        </div>
+    </body>
+</html>
